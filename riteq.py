@@ -1,17 +1,15 @@
 import requests
 import json
 import requests
-
-
-
+import config as config
 
 class Riteq:
 
     def get_token(self):
-        url = BASE_URL + "token"
+        url = config.BASE_URL + "token"
         params = {
-            "username": USER,
-            "password": PASS,
+            "username": config.USER,
+            "password": config.PASS,
             "grant_type": "password"
         }
         post_r = requests.post(url, params)
@@ -27,5 +25,7 @@ class Riteq:
 
     def get_request_url(self, request_type, start_date, end_date):
         return {
-            'shift': BASE_URL + "Shift?startTime=" + start_date.strftime('%Y-%m-%d') + "&endTime=" + end_date.strftime('%Y-%m-%d')
+            'shift': config.BASE_URL + "Shift?startTime=" +
+                     start_date.strftime('%Y-%m-%d') + "&endTime=" +
+                     end_date.strftime('%Y-%m-%d')
         }[request_type]
