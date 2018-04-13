@@ -11,6 +11,8 @@ class main:
         api = Riteq()
         util = Util()
         token = api.get_token()
+
+        # need some confirmation
         end_date = datetime.datetime.now()
         start_date = end_date - datetime.timedelta(days=13)
 

@@ -24,6 +24,7 @@ class Riteq:
         return json.loads(get_request.text)
 
     def get_request_url(self, request_type, start_date, end_date):
+        # additional request types can be added in this switch-case
         return {
             'shift': config.BASE_URL + "Shift?startTime=" +
                      start_date.strftime('%Y-%m-%d') + "&endTime=" +
