@@ -2,7 +2,7 @@ from riteq import Riteq
 from util import Util
 import datetime
 
-REQUESTS = ['shift']
+REQUESTS = ['org']
 
 
 class main:

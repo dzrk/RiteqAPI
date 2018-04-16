@@ -6,6 +6,7 @@ import config as config
 class Riteq:
 
     def get_token(self):
+        # gets token via password
         url = config.BASE_URL + "token"
         params = {
             "username": config.USER,
@@ -18,9 +19,9 @@ class Riteq:
         return response['access_token']
 
     def get_data(self, token, url):
+        # asks for data with token auth
         headers = {"Authorization": "Bearer " + token}
         get_request = requests.get(url, headers=headers)
-
         return json.loads(get_request.text)
 
     def get_request_url(self, request_type, start_date, end_date):
@@ -28,5 +29,6 @@ class Riteq:
         return {
             'shift': config.BASE_URL + "Shift?startTime=" +
                      start_date.strftime('%Y-%m-%d') + "&endTime=" +
-                     end_date.strftime('%Y-%m-%d')
+                     end_date.strftime('%Y-%m-%d'),
+            'org': config.BASE_URL + "/Organization"
         }[request_type]
