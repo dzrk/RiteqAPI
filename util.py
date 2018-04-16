@@ -2,6 +2,7 @@ import csv
 
 
 class Util:
+    pay_rules = []
 
     def write_csv(self, file_name, json_r):
         with open(file_name + '.csv', 'wb') as csvfile:
@@ -10,6 +11,8 @@ class Util:
                 self.write_shift_data(json_r, csvout)
             elif file_name == 'org':
                 self.write_org_data(json_r, csvout)
+            elif file_name == 'pay_rule':
+                self.write_pay_rule_data(json_r, csvout)
 
     def write_shift_data(self, json_r, csvout):
         col_titles = ["Id", "Employee Id", "Scheduled Shift Id", "Start Time - Shift", "End Time - Shift",
@@ -20,8 +23,12 @@ class Util:
             if self.check_dict_exists(shifts, 'Breaks'):
                 break_start = shifts['Breaks'][0]['StartTime']
                 break_end = shifts['Breaks'][0]['EndTime']
+
             if self.check_dict_exists(shifts, 'SubShifts'):
                 org_id = shifts['SubShifts'][0]['OrgId']
+
+            if shifts['PayRuleId'] not in self.pay_rules:
+                self.pay_rules.append(shifts['PayRuleId'])
 
             data = [shifts['Id'], shifts['EmployeeId'], shifts['ScheduledShiftId'],
                     shifts['StartTime'], shifts['EndTime'],
@@ -42,6 +49,14 @@ class Util:
             data = [orgs['Id'], orgs['Name'], orgs['ParentId'], group_id, role_id, stencil_id]
             csvout.writerow(data)
 
+    def write_pay_rule_data(self, json_r, csvout):
+        col_titles = ["Pay Id", "Name", "Pay Rule Group Id"]
+        csvout.writerow(col_titles)
+
+        for pay_rule in json_r:
+            data = [pay_rule['Id'], pay_rule['Name'], pay_rule['PayRuleGroupId']]
+            csvout.writerow(data)
+
     def check_dict_exists(self, obj, key):
         return len(obj[key]) > 0
 
@@ -51,3 +66,6 @@ class Util:
             if args in obj:
                 data[args] = obj[args]
         return data
+
+    def get_pay_rules(self):
+        return self.pay_rules

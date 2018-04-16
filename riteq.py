@@ -24,11 +24,16 @@ class Riteq:
         get_request = requests.get(url, headers=headers)
         return json.loads(get_request.text)
 
-    def get_request_url(self, request_type, start_date, end_date):
+    def get_request_url(self, request_type, start_date=None, end_date=None, pay_id=None):
         # additional request types can be added in this switch-case
-        return {
-            'shift': config.BASE_URL + "Shift?startTime=" +
-                     start_date.strftime('%Y-%m-%d') + "&endTime=" +
-                     end_date.strftime('%Y-%m-%d'),
-            'org': config.BASE_URL + "/Organization"
-        }[request_type]
+        if pay_id == None:
+            return {
+                'shift': config.BASE_URL + "Shift?startTime=" +
+                         start_date.strftime('%Y-%m-%d') + "&endTime=" +
+                         end_date.strftime('%Y-%m-%d'),
+                'org': config.BASE_URL + "Organization",
+            }[request_type]
+        else:
+            return {
+                'pay_rule': config.BASE_URL + "PayRule/" + str(pay_id)
+            }[request_type]
