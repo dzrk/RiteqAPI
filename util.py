@@ -20,6 +20,9 @@ class Util:
             elif file_name == 'employee':
                 self.write_emp_data(json_r, csvout)
 
+            elif file_name == 'skill':
+                self.write_skill_data(json_r, csvout)
+
 
     def write_shift_data(self, json_r, csvout):
         col_titles = ["Id", "Employee Id", "Scheduled Shift Id", "Start Time - Shift", "End Time - Shift",
@@ -81,6 +84,13 @@ class Util:
                     emp['ExportCode']['ExportCode'], skills]
             csvout.writerow(data)
 
+    def write_skill_data(self, json_r, csvout):
+        col_titles = ["Id", "Short Name"]
+        csvout.writerow(col_titles)
+
+        for skills in json_r:
+            data = [skills["Id"], skills["ShortName"]]
+            csvout.writerow(data)
 
     def check_dict_exists(self, obj, key):
         return len(obj[key]) > 0

@@ -2,7 +2,7 @@ from riteq import Riteq
 from util import Util
 import datetime
 #'shift', 'org'
-STATIC_REQUESTS = ['shift']
+STATIC_REQUESTS = ['shift','org']
 DYNAMIC_REQUESTS = ['pay_rule','employee', 'skill']
 REQUESTS = [STATIC_REQUESTS, DYNAMIC_REQUESTS]
 
@@ -22,6 +22,7 @@ class main:
                 else:
                     pay_data = []
                     emp_data = []
+                    skill_data = []
                     if request == DYNAMIC_REQUESTS[0]:
                         pay_rules = util.get_pay_rules()
 
@@ -38,6 +39,14 @@ class main:
                             data = api.get_data(token, url)
                             emp_data.append(data)
                         util.write_csv(request, emp_data)
+                    elif request == DYNAMIC_REQUESTS[2]:
+                        skill_list = util.get_skills_list()
+
+                        for skill_id in skill_list:
+                            url = api.get_request_url(request, skill_id=skill_id)
+                            data = api.get_data(token, url)
+                            skill_data.append(data)
+                        util.write_csv(request, skill_data)
 
 
 
