@@ -1,7 +1,7 @@
-import requests
 import json
 import requests
 import config as config
+import datetime
 
 class Riteq:
 
@@ -24,16 +24,16 @@ class Riteq:
         get_request = requests.get(url, headers=headers)
         return json.loads(get_request.text)
 
-    def get_request_url(self, request_type, start_date=None, end_date=None, pay_id=None):
-        # additional request types can be added in this switch-case
-        if pay_id == None:
-            return {
-                'shift': config.BASE_URL + "Shift?startTime=" +
-                         start_date.strftime('%Y-%m-%d') + "&endTime=" +
-                         end_date.strftime('%Y-%m-%d'),
-                'org': config.BASE_URL + "Organization",
-            }[request_type]
-        else:
-            return {
-                'pay_rule': config.BASE_URL + "PayRule/" + str(pay_id)
-            }[request_type]
+    def get_request_url(self, request_type, pay_id=None, emp_id=None):
+        # additional request types can be added in this pseudo switch-case
+        end_date = datetime.datetime.now()
+        start_date = end_date - datetime.timedelta(days=7)
+        return {
+            'shift': config.BASE_URL + "Shift?startTime=" +
+                     start_date.strftime('%Y-%m-%d') + "&endTime=" +
+                     end_date.strftime('%Y-%m-%d'),
+            'org': config.BASE_URL + "Organization",
+            'pay_rule': config.BASE_URL + "PayRule/" + str(pay_id),
+            'employee': config.BASE_URL + "Employee/" + str(emp_id)
+        }[request_type]
+
