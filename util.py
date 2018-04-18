@@ -5,6 +5,7 @@ class Util:
     pay_rules = []
     employee_list = []
     skills_list = []
+    org_list = []
     def write_csv(self, file_name, json_r):
         with open(file_name + '.csv', 'wb') as csvfile:
             csvout = csv.writer(csvfile)
@@ -60,6 +61,7 @@ class Util:
             group_id = validate_data['GroupId'] if 'GroupId' in validate_data else None
 
             data = [org['Id'], org['Name'], org['ParentId'], group_id, role_id, stencil_id]
+            self.org_list.append(data)
             csvout.writerow(data)
 
     def write_pay_rule_data(self, json_r, csvout):
@@ -91,6 +93,13 @@ class Util:
         for skills in json_r:
             data = [skills["Id"], skills["ShortName"]]
             csvout.writerow(data)
+
+    def get_org_chain(self, org_id, org_string):
+        if org_id == 0:
+            return org_string[:-1]
+        else:
+            parent = [org for org in self.org_list if org_id == org[0]]
+            return self.get_org_chain(parent[0][2], org_string + str(parent[0][1]) + "/")
 
     def check_dict_exists(self, obj, key):
         return len(obj[key]) > 0
