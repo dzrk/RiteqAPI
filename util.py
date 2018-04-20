@@ -2,10 +2,14 @@ import csv
 
 
 class Util:
+
     pay_rules = []
     employee_list = []
     skills_list = []
     org_list = []
+    shift_type_list = []
+    shift_list = []
+
     def write_csv(self, file_name, json_r):
         with open(file_name + '.csv', 'wb') as csvfile:
             csvout = csv.writer(csvfile)
@@ -21,22 +25,26 @@ class Util:
             elif file_name == 'employee':
                 self.write_emp_data(json_r, csvout)
 
-            elif file_name == 'skill':
-                self.write_skill_data(json_r, csvout)
+            elif file_name == 'skill' or file_name == 'shift_type':
+                self.write_skill_shift_data(json_r, csvout)
+
 
 
     def write_shift_data(self, json_r, csvout):
         col_titles = ["Id", "Employee Id", "Scheduled Shift Id", "Start Time - Shift", "End Time - Shift",
-                      "Start Time - Break", "End Time - Break", "Pay Rule ID", "Org Id - Sub Shift"]
+                      "Start Time - Break", "End Time - Break", "Pay Rule ID", "Org Id - Sub Shift", "Shift Type Id"]
         csvout.writerow(col_titles)
         for shifts in json_r:
-            break_start, break_end, org_id = [None]*3
+            break_start, break_end, org_id, shift_type_id = [None]*4
             if self.check_dict_exists(shifts, 'Breaks'):
                 break_start = shifts['Breaks'][0]['StartTime']
                 break_end = shifts['Breaks'][0]['EndTime']
 
             if self.check_dict_exists(shifts, 'SubShifts'):
                 org_id = shifts['SubShifts'][0]['OrgId']
+                shift_type_id = shifts['SubShifts'][0]['TypeId']
+                if shifts['SubShifts'][0]['TypeId'] not in self.shift_type_list:
+                    self.shift_type_list.append(shifts['SubShifts'][0]['TypeId'])
 
             if shifts['PayRuleId'] not in self.pay_rules:
                 self.pay_rules.append(shifts['PayRuleId'])
@@ -44,10 +52,12 @@ class Util:
             if shifts['EmployeeId'] not in self.employee_list:
                 self.employee_list.append(shifts['EmployeeId'])
 
+
             data = [shifts['Id'], shifts['EmployeeId'], shifts['ScheduledShiftId'],
                     shifts['StartTime'], shifts['EndTime'],
                     break_start, break_end,
-                    shifts['PayRuleId'], org_id]
+                    shifts['PayRuleId'], org_id, shift_type_id]
+            self.shift_list.append(data)
             csvout.writerow(data)
 
     def write_org_data(self, json_r, csvout):
@@ -86,13 +96,17 @@ class Util:
                     emp['ExportCode']['ExportCode'], skills]
             csvout.writerow(data)
 
-    def write_skill_data(self, json_r, csvout):
-        col_titles = ["Id", "Short Name"]
+    def write_skill_shift_data(self, json_r, csvout):
+        col_titles = ["Id", "Name"]
         csvout.writerow(col_titles)
 
         for skills in json_r:
-            data = [skills["Id"], skills["ShortName"]]
+            if len(skills) == 1:
+                data = [skills[0]['Id'], skills[0]['Name']]
+            else:
+                data = [skills['Id'], skills['Name']]
             csvout.writerow(data)
+
 
     def get_org_chain(self, org_id, org_string):
         if org_id == 0:
@@ -100,6 +114,10 @@ class Util:
         else:
             parent = [org for org in self.org_list if org_id == org[0]]
             return self.get_org_chain(parent[0][2], org_string + str(parent[0][1]) + "/")
+
+    def combine_all_data(self):
+
+        return None
 
     def check_dict_exists(self, obj, key):
         return len(obj[key]) > 0
@@ -119,3 +137,9 @@ class Util:
 
     def get_skills_list(self):
         return self.skills_list
+
+    def get_shift_type_list(self):
+        return self.shift_type_list
+
+    def get_shift_list(self):
+        return self.shift_list
