@@ -55,7 +55,7 @@ class main:
                             data = api.get_data(token, url)
                             shift_data.append(data)
                         util.write_csv(request, shift_data)
-
+        print util.combine_all_data()
 
 if __name__ == '__main__':
     main = main()

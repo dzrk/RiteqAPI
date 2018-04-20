@@ -26,7 +26,7 @@ class Riteq:
 
     def get_request_url(self, request_type, pay_id=None, emp_id=None, skill_id=None, shift_id=None):
         # additional request types can be added in this pseudo switch-case
-        end_date = datetime.datetime.now()
+        end_date = datetime.datetime(2018, 3, 30)
         start_date = end_date - datetime.timedelta(days=7)
         return {
             'shift': config.BASE_URL + "Shift?startTime=" +
