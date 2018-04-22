@@ -13,6 +13,12 @@ class Util:
     shift_type_id = []
     shift_type_list = []
     shift_list = []
+    pay_rule_group_id = []
+    pay_rule_group_list = []
+    pay_rate_group_id = []
+    pay_rate_group_list = []
+    pay_rate_id = []
+    pay_rate_list = []
 
     def write_csv(self, file_name, json_r):
         with open(file_name + '.csv', 'wb') as csvfile:
@@ -31,6 +37,16 @@ class Util:
 
             elif file_name == 'skill' or file_name == 'shift_type':
                 self.write_skill_shift_data(json_r, csvout)
+
+            elif file_name == 'pay_rule_group':
+                self.write_pay_rule_group(json_r, csvout)
+
+            elif file_name == 'pay_rate_group':
+                self.write_pay_rate_group(json_r, csvout)
+
+            elif file_name == 'pay_rate':
+                self.write_pay_rate(json_r, csvout)
+
 
     def write_shift_data(self, json_r, csvout):
         col_titles = ["Id", "Employee Id", "Scheduled Shift Id", "Start Time - Shift", "End Time - Shift",
@@ -82,11 +98,14 @@ class Util:
 
         for pay_rule in json_r:
             data = [pay_rule['Id'], pay_rule['Name'], pay_rule['PayRuleGroupId']]
+            if pay_rule['PayRuleGroupId'] not in self.pay_rule_group_id:
+                self.pay_rule_group_list.append(pay_rule['PayRuleGroupId'])
+
             self.pay_rule_list.append(data)
             csvout.writerow(data)
 
     def write_emp_data(self, json_r, csvout):
-        col_titles = ["Id", "First Name", "Last Name", "Export Code", "Skill Id"]
+        col_titles = ["Id", "First Name", "Last Name", "Export Code", "Skill Id", "Pay Rate Id"]
         csvout.writerow(col_titles)
 
         for emp in json_r:
@@ -95,8 +114,10 @@ class Util:
                 skills = emp['Skills'][0]['SkillId']
                 if skills not in self.skills_id:
                     self.skills_id.append(skills)
+            if emp['Revisions'][-1]['OrganizationLevels'][-1]['PayRateId'] not in self.pay_rate_id:
+                self.pay_rate_id.append(emp['Revisions'][-1]['OrganizationLevels'][-1]['PayRateId'])
             data = [emp['Id'], emp['FirstName'], emp['LastName'],
-                    emp['ExportCode']['ExportCode'], skills]
+                    emp['ExportCode']['ExportCode'], skills, emp['Revisions'][-1]['OrganizationLevels'][-1]['PayRateId']]
             self.employee_list.append(data)
             csvout.writerow(data)
 
@@ -113,6 +134,32 @@ class Util:
                 self.skills_list.append(data)
             csvout.writerow(data)
 
+    def write_pay_rule_group(self, json_r, csvout):
+        col_titles = ["Id", "Name"]
+        csvout.writerow(col_titles)
+
+        for prg in json_r:
+            data = [prg['Id'], prg['Name']]
+            self.pay_rule_group_list.append(data)
+            csvout.writerow(data)
+
+    def write_pay_rate_group(self, json_r, csvout):
+        col_titles = ["Id", "Name"]
+        csvout.writerow(col_titles)
+
+        for prg in json_r:
+            data = [prg['Id'], prg['Name']]
+            self.pay_rate_group_list.append(data)
+            csvout.writerow(data)
+
+    def write_pay_rate(self, json_r, csvout):
+        col_titles = ["Id", "Name"]
+        csvout.writerow(col_titles)
+
+        for prg in json_r:
+            data = [prg[-1]['Id'], prg[-1]['Name']]
+            self.pay_rate_list.append(data)
+            csvout.writerow(data)
 
     def get_org_chain(self, org_id, org_string):
         if org_id == 0:
@@ -126,9 +173,9 @@ class Util:
             csvout = csv.writer(csvfile)
 
             col_title = ["Shift Id", "Employee Id", "Scheduled Shift Id", "Start Time - Shift", "End Time - Shift",
-                          "Start Time - Break", "End Time - Break", "Pay Rule ID", "Org Id - Sub Shift", "Shift Type Id",
-                     "First Name", "Last Name", "Export Code", "Skill Id", "Role", "Org", "Pay Name", "Pay Rule Group Id",
-                     "Skill Name", " Shift Type"]
+                          "Start Time - Break", "End Time - Break", "Pay Rule ID", "Org Id - Sub Shift",
+                         "Shift Type Id", "First Name", "Last Name", "Export Code", "Skill Id", "Pay Rate Id", "Role",
+                         "Org", "Pay Name", "Pay Rule Group Id", "Skill Name", " Shift Type", "Pay Rate"]
             csvout.writerow(col_title)
             for shift in self.shift_list:
                 data = []
@@ -137,8 +184,9 @@ class Util:
                 pay = self.find_from_list(self.pay_rule_list, shift[7])
                 skill = self.find_from_list(self.skills_list, employee[3]) if employee[3] != None else []
                 shift_type = self.find_from_list(self.shift_type_list, shift[9])
-
-                data.extend(shift + employee + [org[0]] + [self.get_org_chain(shift[8], "")] + pay + skill + shift_type)
+                pay_rate = self.find_from_list(self.pay_rate_list, employee[-1])
+                data.extend(shift + employee + [org[0]] + [self.get_org_chain(shift[8], "")] + pay + skill
+                            + shift_type + pay_rate)
                 csvout.writerow(data)
 
     def check_dict_exists(self, obj, key):
@@ -169,3 +217,5 @@ class Util:
     def get_shift_list(self):
         return self.shift_list
 
+    def get_pay_rate_list(self):
+        return self.pay_rate_id

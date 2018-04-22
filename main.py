@@ -1,8 +1,8 @@
 from riteq import Riteq
 from util import Util
 
-STATIC_REQUESTS = ['shift','org']
-DYNAMIC_REQUESTS = ['pay_rule','employee', 'skill', 'shift_type']
+STATIC_REQUESTS = ['shift','org','pay_rate_group','pay_rule_group']
+DYNAMIC_REQUESTS = ['pay_rule','employee', 'skill', 'shift_type', 'pay_rate']
 REQUESTS = [STATIC_REQUESTS, DYNAMIC_REQUESTS]
 
 class main:
@@ -23,6 +23,7 @@ class main:
                     emp_data = []
                     skill_data = []
                     shift_data = []
+                    pay_rate_data = []
                     if request == DYNAMIC_REQUESTS[0]:
                         pay_rules = util.get_pay_rules()
 
@@ -55,7 +56,15 @@ class main:
                             data = api.get_data(token, url)
                             shift_data.append(data)
                         util.write_csv(request, shift_data)
-        print util.combine_all_data()
+                    elif request == DYNAMIC_REQUESTS[4]:
+                        pay_rate_list = util.get_pay_rate_list()
+
+                        for pay_rate_id in pay_rate_list:
+                            url = api.get_request_url(request, pay_rate_id=pay_rate_id)
+                            data = api.get_data(token, url)
+                            pay_rate_data.append(data)
+                        util.write_csv(request, pay_rate_data)
+        util.combine_all_data()
 
 if __name__ == '__main__':
     main = main()
