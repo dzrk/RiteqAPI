@@ -2,3 +2,7 @@ config.py
 config.pyc
 config.*
 *.csv
+setup.py
+build/
+dist/
+__pycache__/

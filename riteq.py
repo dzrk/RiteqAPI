@@ -15,7 +15,7 @@ class Riteq:
         }
         post_r = requests.post(url, params)
         response = json.loads(post_r.text)
-
+        print("Authenticating connection...")
         return response['access_token']
 
     def get_data(self, token, url):

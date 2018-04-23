@@ -1,7 +1,6 @@
 import csv
 from datetime import datetime
 
-
 class Util:
 
     pay_rule_list = []
@@ -47,6 +46,8 @@ class Util:
 
             elif file_name == 'pay_rate':
                 self.write_pay_rate(json_r, csvout)
+
+
 
 
     def write_shift_data(self, json_r, csvout):
@@ -112,7 +113,6 @@ class Util:
     def write_emp_data(self, json_r, csvout):
         col_titles = ["Id", "First Name", "Last Name", "Export Code", "Skill Id", "Pay Rate Id"]
         csvout.writerow(col_titles)
-
         for emp in json_r:
             skills = None
             if self.check_dict_exists(emp, 'Skills'):
@@ -176,7 +176,7 @@ class Util:
     def combine_all_data(self):
         with open('combined.csv', 'wb') as csvfile:
             csvout = csv.writer(csvfile)
-
+            print("\nCompiling data...")
             col_title = ["Shift Id", "Employee Id", "Scheduled Shift Id", "Start Time - Shift", "End Time - Shift",
                          "Total Shift Hours", "Start Time - Break", "End Time - Break", "Total Break Hours",
                          "Pay Rule ID", "Org Id - Sub Shift", "Shift Type Id", "First Name", "Last Name",
@@ -208,11 +208,7 @@ class Util:
         return data
 
     def find_from_list(self, data, key): # looks inside lists to find the correct list id
-        try:
-            return [entry[1:] for entry in data if entry[0] == key][0]
-        except IndexError as e:
-            print data
-            print key
+        return [entry[1:] for entry in data if entry[0] == key][0]
 
     def difference_in_time(self, start, end):
         start = datetime.strptime(start, '%Y-%m-%dT%H:%M:%S')
