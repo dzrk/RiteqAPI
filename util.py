@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 
 
 class Util:
@@ -49,14 +50,16 @@ class Util:
 
 
     def write_shift_data(self, json_r, csvout):
-        col_titles = ["Id", "Employee Id", "Scheduled Shift Id", "Start Time - Shift", "End Time - Shift",
-                      "Start Time - Break", "End Time - Break", "Pay Rule ID", "Org Id - Sub Shift", "Shift Type Id"]
+        col_titles = ["Shift Id", "Employee Id", "Scheduled Shift Id", "Start Time - Shift", "End Time - Shift",
+                         "Total Shift Hours", "Start Time - Break", "End Time - Break", "Total Break Hours",
+                         "Pay Rule ID", "Org Id - Sub Shift", "Shift Type Id"]
         csvout.writerow(col_titles)
         for shifts in json_r:
-            break_start, break_end, org_id, shift_type_id = [None]*4
+            break_start, break_end, org_id, shift_type_id, break_total, hours_total = [None]*6
             if self.check_dict_exists(shifts, 'Breaks'):
                 break_start = shifts['Breaks'][0]['StartTime']
                 break_end = shifts['Breaks'][0]['EndTime']
+                break_total = self.difference_in_time(break_start, break_end)
 
             if self.check_dict_exists(shifts, 'SubShifts'):
                 org_id = shifts['SubShifts'][0]['OrgId']
@@ -70,10 +73,12 @@ class Util:
             if shifts['EmployeeId'] not in self.employee_id:
                 self.employee_id.append(shifts['EmployeeId'])
 
+            if self.check_dict_exists(shifts, 'EndTime'):
+                hours_total = self.difference_in_time(shifts['StartTime'], shifts['EndTime'])
 
             data = [shifts['Id'], shifts['EmployeeId'], shifts['ScheduledShiftId'],
-                    shifts['StartTime'], shifts['EndTime'],
-                    break_start, break_end,
+                    shifts['StartTime'], shifts['EndTime'], hours_total,
+                    break_start, break_end, break_total,
                     shifts['PayRuleId'], org_id, shift_type_id]
             self.shift_list.append(data)
             csvout.writerow(data)
@@ -173,23 +178,26 @@ class Util:
             csvout = csv.writer(csvfile)
 
             col_title = ["Shift Id", "Employee Id", "Scheduled Shift Id", "Start Time - Shift", "End Time - Shift",
-                          "Start Time - Break", "End Time - Break", "Pay Rule ID", "Org Id - Sub Shift",
-                         "Shift Type Id", "First Name", "Last Name", "Export Code", "Skill Id", "Pay Rate Id", "Role",
-                         "Org", "Pay Name", "Pay Rule Group Id", "Skill Name", " Shift Type", "Pay Rate"]
+                         "Total Shift Hours", "Start Time - Break", "End Time - Break", "Total Break Hours",
+                         "Pay Rule ID", "Org Id - Sub Shift", "Shift Type Id", "First Name", "Last Name",
+                         "Export Code", "Skill Id", "Pay Rate Id", "Role", "Org", "Pay Name",
+                         "Pay Rule Group Id", "Skill Name", " Shift Type", "Pay Rate"]
             csvout.writerow(col_title)
             for shift in self.shift_list:
                 data = []
                 employee = self.find_from_list(self.employee_list, shift[1])
-                org = self.find_from_list(self.org_list, shift[8])
-                pay = self.find_from_list(self.pay_rule_list, shift[7])
-                skill = self.find_from_list(self.skills_list, employee[3]) if employee[3] != None else []
-                shift_type = self.find_from_list(self.shift_type_list, shift[9])
+                org = self.find_from_list(self.org_list, shift[10])
+                pay = self.find_from_list(self.pay_rule_list, shift[-3])
+                skill = self.find_from_list(self.skills_list, employee[-2]) if employee[-2] != None else []
+                shift_type = self.find_from_list(self.shift_type_list, shift[-1])
                 pay_rate = self.find_from_list(self.pay_rate_list, employee[-1])
-                data.extend(shift + employee + [org[0]] + [self.get_org_chain(shift[8], "")] + pay + skill
+                data.extend(shift + employee + [org[0]] + [self.get_org_chain(shift[-2], "")] + pay + skill
                             + shift_type + pay_rate)
                 csvout.writerow(data)
 
     def check_dict_exists(self, obj, key):
+        if obj[key] == None:
+            return False
         return len(obj[key]) > 0
 
     def check_attr_exists(self, obj, *attr):
@@ -200,7 +208,16 @@ class Util:
         return data
 
     def find_from_list(self, data, key): # looks inside lists to find the correct list id
-        return [entry[1:] for entry in data if entry[0] == key][0]
+        try:
+            return [entry[1:] for entry in data if entry[0] == key][0]
+        except IndexError as e:
+            print data
+            print key
+
+    def difference_in_time(self, start, end):
+        start = datetime.strptime(start, '%Y-%m-%dT%H:%M:%S')
+        end = datetime.strptime(end, '%Y-%m-%dT%H:%M:%S')
+        return end - start
 
     def get_pay_rules(self):
         return self.pay_rule_id
